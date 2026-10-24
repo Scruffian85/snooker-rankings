@@ -69,9 +69,21 @@ class MainTest(unittest.TestCase):
     def run_main(self, side_effect, argv=()):
         out, err = io.StringIO(), io.StringIO()
         with mock.patch("rankings.fetch_json", side_effect=side_effect) as fetch, \
+                mock.patch.dict("os.environ", {"SNOOKER_API_HEADER": "me"}), \
                 redirect_stdout(out), redirect_stderr(err):
             code = rankings.main(list(argv))
         return code, out.getvalue(), err.getvalue(), fetch
+
+    def test_missing_id_exits_before_any_request(self):
+        err = io.StringIO()
+        with mock.patch("rankings.fetch_json") as fetch, \
+                mock.patch.dict("os.environ", {}, clear=True), \
+                mock.patch("rankings.ID_FILE", "/nonexistent/snooker-org-id"), \
+                redirect_stderr(err):
+            code = rankings.main([])
+        self.assertEqual(code, 1)
+        fetch.assert_not_called()
+        self.assertIn("SNOOKER_API_HEADER", err.getvalue())
 
     def test_prints_table(self):
         code, out, _, fetch = self.run_main([PLAYERS, RANKINGS], ["--season", "2026"])

@@ -9,12 +9,21 @@ import urllib.request
 
 API_URL = "https://api.snooker.org/"
 # snooker.org only answers requests carrying the X-Requested-By value they
-# issued you. Set SNOOKER_API_HEADER to override the default.
-DEFAULT_REQUESTED_BY = "AdamTinker319"
+# issued you. It is personal, so it is not stored here: set SNOOKER_API_HEADER,
+# or put the value on one line in ~/.config/snooker-org-id.
+ID_FILE = os.path.expanduser("~/.config/snooker-org-id")
 DEFAULT_SEASON = 2025
 TIMEOUT = 30
 RETRIES = 3
 
+
+
+def _read_id_file():
+    try:
+        with open(ID_FILE) as f:
+            return f.read().strip()
+    except OSError:
+        return ""
 
 def fetch_json(url, requested_by, retries=RETRIES, timeout=TIMEOUT):
     request = urllib.request.Request(url)
@@ -52,7 +61,11 @@ def main(argv=None):
     parser.add_argument("--season", type=int, default=DEFAULT_SEASON,
                         help=f"season start year (default {DEFAULT_SEASON})")
     args = parser.parse_args(argv)
-    requested_by = os.environ.get("SNOOKER_API_HEADER", DEFAULT_REQUESTED_BY)
+    requested_by = os.environ.get("SNOOKER_API_HEADER") or _read_id_file()
+    if not requested_by:
+        print(f"Set SNOOKER_API_HEADER or put your snooker.org X-Requested-By value in {ID_FILE}",
+              file=sys.stderr)
+        return 1
 
     try:
         players = fetch_json(f"{API_URL}?t=10&st=p&s={args.season}", requested_by)

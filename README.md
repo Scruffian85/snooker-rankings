@@ -32,7 +32,7 @@ something unexpected. Network calls time out after 30s and are retried up to 3 t
 
 | Env var | Default | Purpose |
 |---|---|---|
-| `SNOOKER_API_HEADER` | the original hard-coded value | `X-Requested-By` header snooker.org requires. Request your own at <https://api.snooker.org/>. |
+| `SNOOKER_API_HEADER` | contents of `~/.config/snooker-org-id` | `X-Requested-By` header snooker.org requires. It's personal, so it isn't in the repo: set the variable or put the value in that file. Request your own at <https://api.snooker.org/>. |
 
 See `.env.example`. The script reads the environment directly; it does not load `.env` itself.
 
